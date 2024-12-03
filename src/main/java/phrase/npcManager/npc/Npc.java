@@ -92,12 +92,18 @@ public class Npc extends ServerPlayer {
     public static void updateNpc() {
 
         long cooldownUpdates;
-        try {
+        if (Plugin.getInstance().getConfig().contains("settings.cooldownUpdates")) {
             cooldownUpdates = Plugin.getInstance().getConfig().getLong("settings.cooldownUpdates");
-        } catch (NumberFormatException e) {
-            Plugin.getInstance().getLogger().severe("В конфигурационном файле npc в каталоге settings параметр cooldownUpdates должен иметь long тип данных");
+        } else {
+            Plugin.getInstance().getLogger().severe("В конфигурационном файле npc в каталоге settings отсутствует параметр cooldownUpdates");
             return;
         }
+        
+        if (cooldownUpdates < 0) {
+            Plugin.getInstance().getLogger().severe("В конфигурационном файле npc в каталоге settings параметр cooldownUpdates должен быть положительным значением");
+            return;
+        }
+
 
         new BukkitRunnable() {
             @Override
@@ -244,7 +250,7 @@ public class Npc extends ServerPlayer {
 
     }
 
-    
+
 
     public static Map<Integer, Npc> getNpcs() {
         return npcs;
