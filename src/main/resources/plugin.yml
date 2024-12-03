@@ -1,0 +1,7 @@
+name: NpcManager
+version: '1.0'
+main: phrase.npcManager.Plugin
+api-version: '1.18'
+
+commands:
+  npcmanager: {}
