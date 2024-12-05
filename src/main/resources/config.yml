@@ -2,19 +2,29 @@ prefix: "&b&l[>>] "
 isAPlayer: "&cВы не являетесь игроком!"
 usage: "&6Использование: &e/npcmanager create|remove|move|look"
 id: "&cУкажите айди!"
+
 boolean: "&cУкажите true или false!"
 
 message:
   usageCreate: "&6Использование: &e/npcmanager create <айди> <имя>"
   usageRemove: "&6Использование: &e/npcmanager remove <айди>"
   usageLook: "&6Использование: &e/npcmanager look <айди>"
-  usageMove: "&6Использование: &enpcmanager move <айди>"
+  usageMove: "&6Использование: &e/npcmanager move <айди>"
+  usageDisplayName: "&6Использование: &e/npcmanager displayname <айди> <имя>"
+  usagePath: "&6Использование: &e/npcmanager path edit|save"
+  savePath: "&aВы успешно сохранили путь!"
+  editPath: "&eВы начали редактировать путь"
+  setPoint: "&aВы успешно установили точку!"
   create: "&eNPC &aуспешно создан"
   remove: "&eNPC &aуспешно &cудален"
+  displayName: "&aНикнейм &eNPC &aуспешно изменен"
   enable: "&eСлежка за игроком &aвключена"
   disable: "&eСлежка за игроком &cвыключена"
   alreadyExists: "&eNPC c данным айди &cуже существует!"
   doesNoExists: "&eNPC с данным айди &cне существует!"
+  alreadyEditing: "&cВы уже редактируете путь!"
+  doesNoEditing: "&cВы не редактируете путь!"
+  doesNoPath: "&eПуть с данным айди &cне существует!"
 
 settings:
   cooldownUpdates: 600

@@ -3,14 +3,18 @@ package phrase.npcManager;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.network.chat.Component;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import phrase.npcManager.commands.NpcManagerCMD;
+import phrase.npcManager.listeners.Click;
 import phrase.npcManager.listeners.Join;
 import phrase.npcManager.npc.Npc;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public final class Plugin extends JavaPlugin {
@@ -25,9 +29,11 @@ public final class Plugin extends JavaPlugin {
 
         getCommand("npcmanager").setExecutor(new NpcManagerCMD());
         getServer().getPluginManager().registerEvents(new Join(), this);
+        getServer().getPluginManager().registerEvents(new Click(), this);
         saveDefaultConfig();
         loadNpc();
-        // Npc.updateNpc();
+        loadPath();
+        Npc.updateNpc();
 
     }
 
@@ -48,14 +54,34 @@ public final class Plugin extends JavaPlugin {
         for(String key : config.getKeys(false)) {
 
             String name = config.getString(key + ".name");
+            String displayName = config.getString(key + ".displayname");
             UUID id = UUID.fromString(config.getString(key + ".id"));
             Location location = config.getLocation(key + ".location");
 
-            new Npc(Integer.parseInt(key),
+            Npc npc = new Npc(Integer.parseInt(key),
                     new GameProfile(id, name),
-                    location
-                    ) {
-            };
+                    location);
+
+            npc.setCustomName(Component.nullToEmpty(displayName));
+            npc.setCustomNameVisible(true);
+
+        }
+
+    }
+
+    private void loadPath() {
+
+        File file = new File(getDataFolder(), "path.yml");
+
+        if(!file.exists()) {
+            return;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        for(String key : config.getKeys(false)) {
+
+            List<Location> locations = (List<Location>) config.getList(key + ".locations", new ArrayList<>());
+            Npc.Path.getPaths().put(Integer.parseInt(key), locations);
 
         }
 

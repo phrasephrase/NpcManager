@@ -122,10 +122,10 @@ public class NpcManagerCMD implements CommandExecutor {
 
             return true;
         }
-        if(strings[0].equalsIgnoreCase("move")) {
+        if(strings[0].equalsIgnoreCase("displayname")) {
 
-            if (strings.length < 2) {
-                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.usageMove"));
+            if (strings.length < 3) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.usageDisplayName"));
                 return true;
             }
 
@@ -142,7 +142,80 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            // TODO
+            String displayName = strings[2];
+
+            Npc.changeDisplayName(id, displayName);
+            ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.displayName"));
+            return true;
+
+        }
+
+        if(strings[0].equalsIgnoreCase("path")) {
+
+            if(strings.length < 2) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.usagePath"));
+                return true;
+            }
+
+            if(strings[1].equalsIgnoreCase("edit")) {
+
+                if(Npc.Path.getPathEditors().containsKey(player.getUniqueId())) {
+                    ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.alreadyEditing"));
+                    return true;
+                }
+
+                Npc.Path.editPath(player.getUniqueId());
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.editPath"));
+                return true;
+            }
+            if(strings[1].equalsIgnoreCase("save")) {
+
+                if(!Npc.Path.getPathEditors().containsKey(player.getUniqueId())) {
+                    ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.alreadyEditing"));
+                    return true;
+                }
+
+                Npc.Path.savePath(player.getUniqueId());
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.savePath"));
+            }
+
+            return true;
+        }
+
+        if(strings[0].equalsIgnoreCase("move")) {
+
+            if (strings.length < 3) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.usageMove"));
+                return true;
+            }
+
+            int idNpc;
+            try {
+                idNpc = Integer.parseInt(strings[1]);
+            } catch (NumberFormatException e) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("id"));
+                return true;
+            }
+
+            if(!Npc.getNpcs().containsKey(idNpc)) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
+                return true;
+            }
+
+            int idPath;
+            try {
+                idPath = Integer.parseInt(strings[2]);
+            } catch (NumberFormatException e) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("id"));
+                return true;
+            }
+
+            if(!Npc.Path.getPaths().containsKey(idPath)) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoPath"));
+                return true;
+            }
+
+            Npc.move(idNpc, idPath);
 
             return true;
         }
