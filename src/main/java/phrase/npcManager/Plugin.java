@@ -8,9 +8,11 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import phrase.npcManager.commands.NpcManagerCMD;
+import phrase.npcManager.enums.ActionType;
 import phrase.npcManager.listeners.Click;
 import phrase.npcManager.listeners.Join;
 import phrase.npcManager.npc.Npc;
+import phrase.npcManager.tabcompleter.NpcManagerTabCompleter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,14 +22,17 @@ import java.util.UUID;
 public final class Plugin extends JavaPlugin {
 
     private static Plugin instance;
-    private static ProtocolManager protocolManager;
+    private ProtocolManager protocolManager;
 
     @Override
     public void onEnable() {
         instance = this;
-        protocolManager = ProtocolLibrary.getProtocolManager();
 
+
+
+        protocolManager = ProtocolLibrary.getProtocolManager();
         getCommand("npcmanager").setExecutor(new NpcManagerCMD());
+        getCommand("npcmanager").setTabCompleter(new NpcManagerTabCompleter());
         getServer().getPluginManager().registerEvents(new Join(), this);
         getServer().getPluginManager().registerEvents(new Click(), this);
         saveDefaultConfig();
@@ -55,12 +60,18 @@ public final class Plugin extends JavaPlugin {
 
             String name = config.getString(key + ".name");
             String displayName = config.getString(key + ".displayname");
+            ActionType actionType = ActionType.valueOf(config.getString(key + ".actionType"));
+            String execute = config.getString(key + ".execute");
             UUID id = UUID.fromString(config.getString(key + ".id"));
             Location location = config.getLocation(key + ".location");
 
             Npc npc = new Npc(Integer.parseInt(key),
                     new GameProfile(id, name),
                     location);
+
+            if(actionType != null || execute != null) {
+                Npc.add(Integer.parseInt(key), actionType, execute);
+            }
 
             npc.setCustomName(Component.nullToEmpty(displayName));
             npc.setCustomNameVisible(true);
@@ -91,7 +102,7 @@ public final class Plugin extends JavaPlugin {
         return instance;
     }
 
-    public static ProtocolManager getProtocolManager() {
+    public ProtocolManager getProtocolManager() {
         return protocolManager;
     }
 }

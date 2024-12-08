@@ -1,5 +1,9 @@
 package phrase.npcManager.npc;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.*;
@@ -20,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import phrase.npcManager.Plugin;
+import phrase.npcManager.enums.ActionType;
 import phrase.npcManager.utils.ChatUtil;
 
 import java.io.File;
@@ -29,6 +34,8 @@ import java.util.*;
 public class Npc extends ServerPlayer {
 
     private static final Map<Integer, Npc> npcs = new HashMap<>();
+    private ActionType actionType;
+    private String execute;
     private final Location location;
     private boolean look;
 
@@ -49,7 +56,7 @@ public class Npc extends ServerPlayer {
         getBukkitEntity().setDisplayName(gameProfile.getName());
         getBukkitEntity().setPlayerListName(ChatColor.translateAlternateColorCodes('&', "&8[NpcM] ") + id);
 
-        for (Player player : this.getBukkitEntity().getServer().getOnlinePlayers()) {
+        for (Player player : getBukkitEntity().getServer().getOnlinePlayers()) {
 
             ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
             ServerGamePacketListenerImpl connection = serverPlayer.connection;
@@ -204,10 +211,16 @@ public class Npc extends ServerPlayer {
 
                 @Override
                 public void run() {
+                    if(Npc.getNpcs().get(id) == null) {
+                        cancel();
+                        return;
+                    }
+
                     for (Player player : npc.getBukkitEntity().getLocation().getWorld().getPlayers()) {
 
                         if(!Npc.getNpcs().get(id).isLook()) {
                             cancel();
+                            return;
                         }
 
                         ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
@@ -309,6 +322,11 @@ public class Npc extends ServerPlayer {
 
             @Override
             public void run() {
+                    if(Npc.getNpcs().get(idNpc) == null && Npc.Path.getPaths().get(idPath) == null) {
+                        cancel();
+                        return;
+                    }
+
                     if (currentIndex >= locations.size()) {
                          cancel();
                          return;
@@ -366,6 +384,109 @@ public class Npc extends ServerPlayer {
 
     }
 
+    public static void add(int id, ActionType actionType, String execute) {
+
+        Npc npc = npcs.get(id);
+        npc.setActionType(actionType);
+        ProtocolManager protocolManager = Plugin.getInstance().getProtocolManager();
+
+        protocolManager.addPacketListener(new PacketAdapter(Plugin.getInstance(), PacketType.Play.Client.USE_ENTITY) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                if(event.getPacket().getIntegers().read(0) == npc.getId()) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            onInteract(event.getPlayer(),actionType,execute);
+                        }
+                    }.runTask(Plugin.getInstance());
+                }
+            }
+        });
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                File file = new File(Plugin.getInstance().getDataFolder(), "npc.yml");
+
+                if(!file.exists()) {
+                    cancel();
+                    return;
+                }
+
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+                config.set(id + ".actionType", actionType.toString());
+                config.set(id + ".execute", execute);
+
+                try {
+                    config.save(file);
+                    cancel();
+                } catch (IOException e) {
+                    Plugin.getInstance().getLogger().severe("Не удалось сохранить конфигурационный файл npc");
+                    cancel();
+                }
+
+            }
+        }.runTaskAsynchronously(Plugin.getInstance());
+
+    }
+
+    public static void delete(int id) {
+
+        ProtocolManager protocolManager = Plugin.getInstance().getProtocolManager();
+
+        protocolManager.removePacketListener(new PacketAdapter(Plugin.getInstance(), PacketType.Play.Client.USE_ENTITY) {});
+
+        getNpcs().get(id).setActionType(null);
+        getNpcs().get(id).setExecute(null);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+
+                File file = new File(Plugin.getInstance().getDataFolder(), "npc.yml");
+
+                if(!file.exists()) {
+                    cancel();
+                    return;
+                }
+
+                YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+                config.set(id + ".actionType", null);
+                config.set(id + ".execute", null);
+
+                try {
+                    config.save(file);
+                    cancel();
+                } catch (IOException e) {
+                    Plugin.getInstance().getLogger().severe("Не удалось сохранить конфигурационный файл npc");
+                    cancel();
+                }
+
+            }
+        }.runTaskAsynchronously(Plugin.getInstance());
+
+    }
+
+    private static void onInteract(Player player, ActionType actionType, String execute) {
+        if(actionType.equals(ActionType.PLAYER)) {
+            player.performCommand(execute);
+            return;
+        }
+
+        if(actionType.equals(ActionType.CONSOLE)) {
+            Plugin.getInstance().getServer().dispatchCommand(Plugin.getInstance().getServer().getConsoleSender(), execute);
+            return;
+        }
+
+        if(actionType.equals(ActionType.MESSAGE)) {
+            ChatUtil.sendMessage(player, execute);
+        }
+    }
+
     public static class Path {
 
         private static final HashMap<UUID, Integer> pathEditors = new HashMap<>();
@@ -374,10 +495,11 @@ public class Npc extends ServerPlayer {
 
         public static void savePath(UUID player) {
             int idPath = getPathEditors().get(player);
+            idPath++;
             getPathEditors().remove(player);
 
             List<Location> locations = getPaths().get(idPath);
-            int finalIdPath = idPath++;
+            int finalIdPath = idPath;
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -456,6 +578,18 @@ public class Npc extends ServerPlayer {
 
     public static Map<Integer, Npc> getNpcs() {
         return npcs;
+    }
+
+    public void setActionType(ActionType execute) {
+        this.actionType = execute;
+    }
+
+    public void setExecute(String execute) {
+        this.execute = execute;
+    }
+
+    public ActionType getActionType() {
+        return actionType;
     }
 
     public void setLook(boolean look) {

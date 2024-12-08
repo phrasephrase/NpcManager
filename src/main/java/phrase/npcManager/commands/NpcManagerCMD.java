@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import phrase.npcManager.Plugin;
+import phrase.npcManager.enums.ActionType;
 import phrase.npcManager.npc.Npc;
 import phrase.npcManager.utils.ChatUtil;
 
@@ -219,7 +220,83 @@ public class NpcManagerCMD implements CommandExecutor {
 
             return true;
         }
+        if (strings[0].equalsIgnoreCase("add")) {
 
+            if(strings.length < 4) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.usageAdd"));
+                return true;
+            }
+
+            int id;
+            try {
+                id = Integer.parseInt(strings[1]);
+            } catch (NumberFormatException e) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("id"));
+                return true;
+            }
+
+            if(!Npc.getNpcs().containsKey(id)) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
+                return true;
+            }
+
+            if(strings[2].equalsIgnoreCase("player")) {
+
+                Npc.add(id, ActionType.PLAYER, strings[3]);
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.actionType"));
+
+                return true;
+            }
+
+            if(strings[2].equalsIgnoreCase("console")) {
+
+                Npc.add(id, ActionType.CONSOLE, strings[3]);
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.actionType"));
+
+                return true;
+            }
+
+            if(strings[2].equalsIgnoreCase("message")) {
+
+                Npc.add(id, ActionType.MESSAGE, strings[3]);
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.actionType"));
+
+                return true;
+            }
+
+            ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExistsActionType"));
+            return true;
+
+        }
+        if(strings[0].equalsIgnoreCase("delete")) {
+
+            if(strings.length < 2) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.usageAdd"));
+                return true;
+            }
+
+            int id;
+            try {
+                id = Integer.parseInt(strings[1]);
+            } catch (NumberFormatException e) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("id"));
+                return true;
+            }
+
+            if(!Npc.getNpcs().containsKey(id)) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
+                return true;
+            }
+
+            if(Npc.getNpcs().get(id).getActionType() == null) {
+                ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExistsActionType"));
+                return true;
+            }
+
+            Npc.delete(id);
+            ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.actionType"));
+
+        }
 
 
         return true;
