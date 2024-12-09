@@ -45,7 +45,7 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(Npc.getNpcs().containsKey(id)) {
+            if(Npc.npcs.containsKey(id)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.alreadyExists"));
                 return true;
             }
@@ -75,7 +75,7 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(!Npc.getNpcs().containsKey(id)) {
+            if(!Npc.npcs.containsKey(id)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
                 return true;
             }
@@ -100,7 +100,7 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(!Npc.getNpcs().containsKey(id)) {
+            if(!Npc.npcs.containsKey(id)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
                 return true;
             }
@@ -138,7 +138,7 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(!Npc.getNpcs().containsKey(id)) {
+            if(!Npc.npcs.containsKey(id)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
                 return true;
             }
@@ -198,7 +198,7 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(!Npc.getNpcs().containsKey(idNpc)) {
+            if(!Npc.npcs.containsKey(idNpc)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
                 return true;
             }
@@ -235,7 +235,7 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(!Npc.getNpcs().containsKey(id)) {
+            if(!Npc.npcs.containsKey(id)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
                 return true;
             }
@@ -283,12 +283,12 @@ public class NpcManagerCMD implements CommandExecutor {
                 return true;
             }
 
-            if(!Npc.getNpcs().containsKey(id)) {
+            if(!Npc.npcs.containsKey(id)) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExists"));
                 return true;
             }
 
-            if(Npc.getNpcs().get(id).getActionType() == null) {
+            if(Npc.npcs.get(id).getActionType() == null) {
                 ChatUtil.sendMessage(player, Plugin.getInstance().getConfig().getString("message.doesNoExistsActionType"));
                 return true;
             }

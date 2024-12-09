@@ -33,7 +33,7 @@ import java.util.*;
 
 public class Npc extends ServerPlayer {
 
-    private static final Map<Integer, Npc> npcs = new HashMap<>();
+    public static final Map<Integer, Npc> npcs = new HashMap<>();
     private ActionType actionType;
     private String execute;
     private final Location location;
@@ -127,7 +127,7 @@ public class Npc extends ServerPlayer {
                     ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
                     ServerGamePacketListenerImpl connection = serverPlayer.connection;
 
-                    for (Map.Entry<Integer, Npc> entry : getNpcs().entrySet()) {
+                    for (Map.Entry<Integer, Npc> entry : npcs.entrySet()) {
 
                         connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.UPDATE_DISPLAY_NAME, entry.getValue()));
 
@@ -141,24 +141,24 @@ public class Npc extends ServerPlayer {
 
     public static void loadNpc(ServerGamePacketListenerImpl connection) {
 
-        if(getNpcs().isEmpty()) {
+        if(npcs.isEmpty()) {
             return;
         }
 
-        for (Map.Entry<Integer, Npc> entry : getNpcs().entrySet()) {
+        for (Map.Entry<Integer, Npc> entry : npcs.entrySet()) {
 
-            connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, getNpcs().get(entry.getKey())));
-            connection.send(new ClientboundAddPlayerPacket(getNpcs().get(entry.getKey())));
-            connection.send(new ClientboundTeleportEntityPacket(getNpcs().get(entry.getKey())));
+            connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, npcs.get(entry.getKey())));
+            connection.send(new ClientboundAddPlayerPacket(npcs.get(entry.getKey())));
+            connection.send(new ClientboundTeleportEntityPacket(npcs.get(entry.getKey())));
         }
 
     }
 
     public static void remove(int id) {
 
-        Npc npc = Npc.getNpcs().get(id);
+        Npc npc = Npc.npcs.get(id);
 
-        Npc.getNpcs().remove(id);
+        Npc.npcs.remove(id);
 
         for(Player player : npc.getBukkitEntity().getServer().getOnlinePlayers()) {
 
@@ -201,24 +201,24 @@ public class Npc extends ServerPlayer {
 
     public static void look(int id, boolean look) {
 
-        Npc npc = Npc.getNpcs().get(id);
+        Npc npc = Npc.npcs.get(id);
 
-        Npc.getNpcs().get(id).setLook(look);
+        Npc.npcs.get(id).setLook(look);
 
-        if(Npc.getNpcs().get(id).isLook()) {
+        if(Npc.npcs.get(id).isLook()) {
 
             new BukkitRunnable() {
 
                 @Override
                 public void run() {
-                    if(Npc.getNpcs().get(id) == null) {
+                    if(Npc.npcs.get(id) == null) {
                         cancel();
                         return;
                     }
 
                     for (Player player : npc.getBukkitEntity().getLocation().getWorld().getPlayers()) {
 
-                        if(!Npc.getNpcs().get(id).isLook()) {
+                        if(!Npc.npcs.get(id).isLook()) {
                             cancel();
                             return;
                         }
@@ -249,7 +249,7 @@ public class Npc extends ServerPlayer {
             ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
             ServerGamePacketListenerImpl connection = serverPlayer.connection;
 
-            Location location = Npc.getNpcs().get(id).getLocation();
+            Location location = Npc.npcs.get(id).getLocation();
 
             npc.setYRot(location.getYaw());
             npc.setXRot(location.getPitch());
@@ -264,7 +264,7 @@ public class Npc extends ServerPlayer {
 
     public static void changeDisplayName(int id, String displayName) {
 
-        Npc npc = Npc.getNpcs().get(id);
+        Npc npc = Npc.npcs.get(id);
         npc.setCustomName(Component.nullToEmpty(displayName));
         npc.setCustomNameVisible(true);
 
@@ -314,7 +314,7 @@ public class Npc extends ServerPlayer {
 
     public static void move(int idNpc, int idPath) {
 
-        Npc npc = Npc.getNpcs().get(idNpc);
+        Npc npc = Npc.npcs.get(idNpc);
         List<Location> locations = Path.getPaths().get(idPath);
 
         new BukkitRunnable() {
@@ -322,7 +322,7 @@ public class Npc extends ServerPlayer {
 
             @Override
             public void run() {
-                    if(Npc.getNpcs().get(idNpc) == null && Npc.Path.getPaths().get(idPath) == null) {
+                    if(Npc.npcs.get(idNpc) == null && Npc.Path.getPaths().get(idPath) == null) {
                         cancel();
                         return;
                     }
@@ -388,6 +388,7 @@ public class Npc extends ServerPlayer {
 
         Npc npc = npcs.get(id);
         npc.setActionType(actionType);
+        npc.setExecute(execute);
         ProtocolManager protocolManager = Plugin.getInstance().getProtocolManager();
 
         protocolManager.addPacketListener(new PacketAdapter(Plugin.getInstance(), PacketType.Play.Client.USE_ENTITY) {
@@ -439,8 +440,8 @@ public class Npc extends ServerPlayer {
 
         protocolManager.removePacketListener(new PacketAdapter(Plugin.getInstance(), PacketType.Play.Client.USE_ENTITY) {});
 
-        getNpcs().get(id).setActionType(null);
-        getNpcs().get(id).setExecute(null);
+        npcs.get(id).setActionType(null);
+        npcs.get(id).setExecute(null);
 
         new BukkitRunnable() {
             @Override
@@ -574,10 +575,6 @@ public class Npc extends ServerPlayer {
             return countPaths;
         }
 
-    }
-
-    public static Map<Integer, Npc> getNpcs() {
-        return npcs;
     }
 
     public void setActionType(ActionType execute) {
